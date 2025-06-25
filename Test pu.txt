@@ -1,0 +1,10 @@
+from pywifi import PyWiFi
+
+wifi = PyWiFi()
+interfaces = wifi.interfaces()
+
+print(f"Found {len(interfaces)} Wi-Fi interfaces")
+if len(interfaces) > 0:
+    print(f"Interface 0: {interfaces[0].name()}")
+else:
+    print("No Wi-Fi interfaces found.")

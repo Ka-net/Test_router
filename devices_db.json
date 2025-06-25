@@ -1,0 +1,40 @@
+{
+    "CGA2121": {
+        "producent": "Technicolor",
+        "model": "CGA2121",
+        "ethernet_ports": 4,
+        "speeds": {
+            "cable_download": 300,
+            "cable_upload": 50,
+            "wifi_24ghz_download": 30,
+            "wifi_24ghz_upload": 30,
+            "wifi_5ghz_download": 250,
+            "wifi_5ghz_upload": 40,
+            "wifi_6ghz_download": 0,
+            "wifi_6ghz_upload": 0
+        },
+        "2.4ghz": true,
+        "5ghz": true,
+        "6ghz": false,
+        "type": "router"
+    },
+    "TG6441B": {
+        "producent": "Arris",
+        "model": "TG6441B",
+        "ethernet_ports": 4,
+        "speeds": {
+            "cable_download": 850,
+            "cable_upload": 350,
+            "wifi_24ghz_download": 40,
+            "wifi_24ghz_upload": 40,
+            "wifi_5ghz_download": 600,
+            "wifi_5ghz_upload": 200,
+            "wifi_6ghz_download": 0,
+            "wifi_6ghz_upload": 0
+        },
+        "2.4ghz": true,
+        "5ghz": true,
+        "6ghz": false,
+        "type": "router"
+    }
+}

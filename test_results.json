@@ -1,0 +1,18 @@
+[
+    {
+        "TG6441B": {
+            "router_number": 1,
+            "status": "Afsluttet",
+            "wifi_results": {
+                "2.4ghz": "Fejlet (kunne ikke forbinde)",
+                "5ghz": "Fejlet (kunne ikke forbinde)"
+            },
+            "ethernet_results": {
+                "1": "Fejlet (0/0)",
+                "2": "Fejlet (0/0)",
+                "3": "Fejlet (0/0)",
+                "4": "Fejlet (0/0)"
+            }
+        }
+    }
+]
