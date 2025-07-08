@@ -1,6 +1,6 @@
 import json
 import time
-import speedtest as spd
+import subprocess
 import requests
 import paramiko
 import wmi
@@ -201,19 +201,60 @@ def test_wifi_with_retries(band, ssid, wifi_password, expected_download_speed, e
 
 def speedtest():
     """
-    Udfører en hastighedstest via speedtest-cli og returnerer download- og uploadhastigheder med en nedtælling.
+    Udfører en hastighedstest via fast-cli og returnerer download- og uploadhastigheder med en nedtælling.
     """
-  print("[DEBUG] Udfører hastighedstest via speedtest-modul...")
+    print("[DEBUG] Udfører hastighedstest via fast-cli...")
     try:
-        st = spd.Speedtest()
-        st.get_best_server()
-        download = st.download() / 1_000_000
-        upload = st.upload() / 1_000_000
-        print(f"[DEBUG] Download: {download:.2f} Mbps, Upload: {upload:.2f} Mbps")
-        return download, upload
+        # Start processen med Popen
+        process = subprocess.Popen(
+            ["fast", "--upload", "--json"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            shell=True
+        )
+
+        # Overvåg processen med en manuel timeout
+        timeout = 120  # 2 minutter
+        start_time = time.time()
+
+        while process.poll() is None:  # Tjekker om processen stadig kører
+            elapsed_time = time.time() - start_time
+            remaining_time = timeout - elapsed_time
+
+            # Udskriv status hver 10. sekund
+            if int(elapsed_time) % 10 == 0:
+                print(f"[DEBUG] Der er gået {int(elapsed_time)} sekunder. Tid tilbage: {int(remaining_time)} sekunder.")
+
+            # Tjek for timeout
+            if elapsed_time > timeout:
+                print(f"[ERROR] Timeout: Tiden på {timeout // 60} minutter ({timeout} sekunder) er overskredet.")
+                process.terminate()  # Afslut processen
+                time.sleep(2)  # Giv processen tid til at afslutte
+                process.kill()  # Tving afslutning, hvis den stadig kører
+                print("[DEBUG] Processen 'fast-cli' blev afsluttet manuelt efter timeout.")
+                return 0, 0
+
+            time.sleep(1)  # Vent før næste tjek
+
+        # Læs processens output, hvis den afsluttes normalt
+        stdout, stderr = process.communicate()
+        if process.returncode == 0 and stdout.strip():
+            data = json.loads(stdout)
+            download_speed = data.get("downloadSpeed", 0)
+            upload_speed = data.get("uploadSpeed", 0)
+            print(f"[DEBUG] Hastighedstest resultater - Download: {download_speed} Mbps, Upload: {upload_speed} Mbps")
+            return download_speed, upload_speed
+        else:
+            print(f"[DEBUG] Fejl eller tomt output fra fast-cli. Fejl: {stderr.strip()}")
+    except subprocess.TimeoutExpired:
+        print("[ERROR] Hastighedstest afbrudt pga. timeout.")
+    except json.JSONDecodeError as e:
+        print(f"[DEBUG] JSONDecodeError: {e}")
     except Exception as e:
-        print(f"[ERROR] Speedtest fejlede: {e}")
-        return 0, 0
+        print(f"[DEBUG] Fejl ved udførelse af hastighedstest: {e}")
+
+    return 0, 0  # Returner 0 for både download og upload ved fejl
 
 
 def save_to_json(model_name, device_results, filename="test_results.json"):
@@ -522,7 +563,7 @@ def set_static_ip_on_ethernet(ip_address, subnet_mask, gateway, dns_servers):
 
 def run_test(model_name, num_devices, recipient_email):
     global test_running, stop_flag
-
+    disable_ipv6
     print(f"[DEBUG] Kører tests for {model_name} med {num_devices} enheder og sender resultater til {recipient_email}")
     test_running = True
     print("[DEBUG] test_running sat til True.")
@@ -645,6 +686,7 @@ def run_test(model_name, num_devices, recipient_email):
     print("[INFO] Alle tests afsluttet. Sender e-mail...")
     send_email_using_script(recipient_email)
     print(f"[INFO] Test afsluttet og e-mail sendt til {recipient_email}")
+    enable_ipv6
 
 
 
